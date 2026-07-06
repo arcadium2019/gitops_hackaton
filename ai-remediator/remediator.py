@@ -91,11 +91,14 @@ MANIFESTE ACTUEL :
 VULNÉRABILITÉS ({workload}) :
 {vulns}
 
-Corrige le manifeste : mets à jour l'image vers une version corrigée récente et \
-stable, supprime privileged, ajoute un securityContext non-root \
-(runAsNonRoot: true, runAsUser >= 1000, allowPrivilegeEscalation: false, \
-capabilities drop ALL), ajoute des resources requests/limits raisonnables. \
-Ne change RIEN d'autre (noms, labels, namespaces, replicas identiques).
+Corrige le manifeste : mets à jour chaque image vers une version PATCHÉE et \
+ÉPINGLÉE (jamais :latest — ex nginx 1.27.x, redis 7.4.x), supprime privileged, \
+ajoute un securityContext non-root (runAsNonRoot: true, runAsUser >= 1000, \
+allowPrivilegeEscalation: false, capabilities drop ALL), ajoute des resources \
+requests/limits raisonnables. ATTENTION : l'image nginx standard ne peut pas \
+tourner en non-root — remplace-la par nginxinc/nginx-unprivileged (port 8080, \
+adapte containerPort). Ne change RIEN d'autre (noms, labels, namespaces, \
+replicas identiques).
 
 Réponds en deux blocs EXACTEMENT :
 EXPLICATION: <3 phrases max sur les failles et les corrections>
@@ -216,18 +219,29 @@ def already_open_pr(workload):
 def run_once():
     findings = get_vulnerabilities()
     print(f"[audit] {len(findings)} workload(s) vulnérable(s) détecté(s)")
-    for f in findings:
-        if already_open_pr(f["workload"]):
-            print(f"  - {f['workload']}: PR déjà ouverte, skip")
-            continue
-        print(f"  - {f['workload']}: {len(f['cves'])} CVE HIGH/CRITICAL → analyse IA...")
-        path = f"{WORKLOADS_DIR}/vulnerable-app.yaml"
-        manifest = base64.b64decode(
-            gh("GET", f"/repos/{GH_REPO}/contents/{path}")["content"]
-        ).decode()
-        explanation, fixed = call_ai(manifest, f)
-        url = open_pr(path, fixed, explanation, f)
-        print(f"    ✅ PR ouverte : {url}")
+    if not findings:
+        return
+    # Tous les workloads demo sont dans le même fichier -> UNE seule PR
+    # regroupant toutes les vulnérabilités (évite les PR en conflit).
+    merged = {
+        "workload": "demo-workloads",
+        "kind": "Deployment",
+        "namespace": "demo",
+        "container": ", ".join(f["container"] for f in findings),
+        "image": ", ".join(f["image"] for f in findings),
+        "cves": [c for f in findings for c in f["cves"]],
+    }
+    if already_open_pr(merged["workload"]):
+        print("  - PR déjà ouverte pour demo-workloads, skip")
+        return
+    print(f"  - {len(merged['cves'])} CVE HIGH/CRITICAL au total → analyse IA...")
+    path = f"{WORKLOADS_DIR}/vulnerable-app.yaml"
+    manifest = base64.b64decode(
+        gh("GET", f"/repos/{GH_REPO}/contents/{path}")["content"]
+    ).decode()
+    explanation, fixed = call_ai(manifest, merged)
+    url = open_pr(path, fixed, explanation, merged)
+    print(f"    ✅ PR ouverte : {url}")
 
 
 if __name__ == "__main__":

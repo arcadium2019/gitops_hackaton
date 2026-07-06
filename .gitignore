@@ -1,0 +1,6 @@
+# Secrets — ne jamais commiter
+*.env
+run-remediator.ps1
+kubeconfig*
+ai-endpoints-key.txt
+__pycache__/
