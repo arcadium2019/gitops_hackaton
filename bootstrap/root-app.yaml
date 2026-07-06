@@ -1,5 +1,4 @@
 # App-of-apps : Argo CD gère tout le dépôt
-# REMPLACER repoURL par l'URL du dépôt de l'équipe après création
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -8,7 +7,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/EQUIPE8/gitops-repo.git
+    repoURL: https://github.com/arcadium2019/gitops_hackaton.git
     targetRevision: main
     path: apps
   destination:
