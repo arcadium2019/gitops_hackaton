@@ -24,12 +24,23 @@ spec:
     spec:
       containers:
         - name: web
-          image: nginx:1.14.2
+          image: nginxinc/nginx-unprivileged:1.27
           ports:
-            - containerPort: 80
+            - containerPort: 8080
           securityContext:
-            privileged: true
-            runAsUser: 0
+            runAsNonRoot: true
+            runAsUser: 1001
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -50,6 +61,20 @@ spec:
     spec:
       containers:
         - name: redis
-          image: redis:5.0.5
+          image: redis:7.4
           ports:
             - containerPort: 6379
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1002
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
