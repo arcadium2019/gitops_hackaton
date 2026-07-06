@@ -1,0 +1,65 @@
+# Policies Kyverno — policy-as-code (mode audit pour laisser la démo tourner)
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-privileged-containers
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+    - name: privileged-containers
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+      validate:
+        message: "Les conteneurs privilégiés sont interdits."
+        pattern:
+          spec:
+            containers:
+              - =(securityContext):
+                  =(privileged): "false"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-resource-limits
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+    - name: require-limits
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+      validate:
+        message: "CPU et mémoire limits sont obligatoires."
+        pattern:
+          spec:
+            containers:
+              - resources:
+                  limits:
+                    cpu: "?*"
+                    memory: "?*"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-run-as-root
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+    - name: run-as-non-root
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+      validate:
+        message: "Les conteneurs ne doivent pas tourner en root."
+        pattern:
+          spec:
+            containers:
+              - =(securityContext):
+                  =(runAsUser): ">0"

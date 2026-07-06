@@ -1,0 +1,55 @@
+# Workload volontairement vulnérable — cible de la démo
+# Problèmes : image obsolète (CVEs), run as root, privileged, pas de limits
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: legacy-web
+  namespace: demo
+  labels:
+    app: legacy-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: legacy-web
+  template:
+    metadata:
+      labels:
+        app: legacy-web
+    spec:
+      containers:
+        - name: web
+          image: nginx:1.14.2
+          ports:
+            - containerPort: 80
+          securityContext:
+            privileged: true
+            runAsUser: 0
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: old-redis
+  namespace: demo
+  labels:
+    app: old-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: old-redis
+  template:
+    metadata:
+      labels:
+        app: old-redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:5.0.5
+          ports:
+            - containerPort: 6379
