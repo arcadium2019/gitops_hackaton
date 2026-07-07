@@ -40,8 +40,24 @@ spec:
           serviceAccountName: ai-remediator
           containers:
             - name: remediator
-              image: ai-remediator:latest
-              imagePullPolicy: IfNotPresent
+              image: python:3.11-alpine
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  echo "==> Installation des dépendances (curl, kubectl)..."
+                  apk add --no-cache curl > /dev/null
+                  curl -sLO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+                  chmod +x kubectl
+                  mv kubectl /usr/local/bin/
+                  
+                  echo "==> Téléchargement du dernier script AI Remediator depuis GitHub..."
+                  curl -s -H "Authorization: token $GITHUB_TOKEN" \
+                       -H "Accept: application/vnd.github.v3.raw" \
+                       -o remediator.py \
+                       "https://raw.githubusercontent.com/arcadium2019/gitops_hackaton/main/ai-remediator/remediator.py"
+                  
+                  echo "==> Lancement de l'analyse..."
+                  python remediator.py
               env:
                 # Variables sensibles injectées depuis un Secret Kubernetes local
                 - name: OVH_AI_ENDPOINTS_ACCESS_TOKEN
