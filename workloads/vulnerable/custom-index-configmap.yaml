@@ -6,11 +6,11 @@ metadata:
 data:
   index.html: |
     <!DOCTYPE html>
-    <html lang="en">
+    <html lang="fr">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Arcadium Vault - Secure Banking</title>
+        <title>Arcadium Vault - Banque Sécurisée</title>
         <style>
             :root {
                 --primary: #2563eb;
@@ -103,6 +103,7 @@ data:
                 justify-content: center;
                 padding: 2rem;
                 text-align: center;
+                position: relative;
             }
 
             .hero-badge {
@@ -223,6 +224,105 @@ data:
                 text-decoration: none;
             }
             .admin-link:hover { color: var(--danger); }
+
+            /* Modal Styles */
+            .modal-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.7);
+                backdrop-filter: blur(5px);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 100;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.3s ease;
+            }
+
+            .modal-overlay.active {
+                opacity: 1;
+                pointer-events: all;
+            }
+
+            .modal-content {
+                background: var(--bg-dark);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 12px;
+                padding: 2rem;
+                width: 90%;
+                max-width: 400px;
+                transform: translateY(20px);
+                transition: transform 0.3s ease;
+            }
+
+            .modal-overlay.active .modal-content {
+                transform: translateY(0);
+            }
+
+            .modal-title {
+                margin-top: 0;
+                margin-bottom: 1.5rem;
+                font-size: 1.5rem;
+            }
+
+            .form-group {
+                margin-bottom: 1rem;
+                text-align: left;
+            }
+
+            .form-group label {
+                display: block;
+                margin-bottom: 0.5rem;
+                color: var(--text-muted);
+                font-size: 0.875rem;
+            }
+
+            .form-group input {
+                width: 100%;
+                padding: 0.75rem;
+                border-radius: 6px;
+                border: 1px solid rgba(255,255,255,0.2);
+                background: rgba(0,0,0,0.2);
+                color: white;
+                box-sizing: border-box;
+                font-family: inherit;
+            }
+
+            .form-group input:focus {
+                outline: none;
+                border-color: var(--primary);
+            }
+
+            .modal-actions {
+                display: flex;
+                justify-content: flex-end;
+                gap: 1rem;
+                margin-top: 2rem;
+            }
+
+            .btn-cancel {
+                background: transparent;
+                border: 1px solid rgba(255,255,255,0.2);
+                color: white;
+                padding: 0.5rem 1rem;
+                border-radius: 6px;
+                cursor: pointer;
+            }
+
+            .btn-cancel:hover {
+                background: rgba(255,255,255,0.1);
+            }
+
+            .success-msg {
+                color: var(--accent);
+                display: none;
+                margin-top: 1rem;
+                font-weight: 600;
+            }
         </style>
     </head>
     <body>
@@ -231,46 +331,128 @@ data:
                 <span class="logo-icon">▲</span> Arcadium Vault
             </div>
             <nav class="nav-links">
-                <a href="#">Personal</a>
-                <a href="#">Business</a>
-                <a href="#">Wealth</a>
+                <a href="#">Particuliers</a>
+                <a href="#">Entreprises</a>
+                <a href="#">Patrimoine</a>
             </nav>
-            <button class="btn-login">Client Portal</button>
+            <button class="btn-login">Espace Client</button>
         </header>
 
         <main>
-            <div class="hero-badge">Military-Grade Security Protocol Active</div>
-            <h1>Secure Your Future.</h1>
-            <p class="subtitle">Experience next-generation digital banking with uncompromising security. Your assets, protected by advanced cryptography.</p>
+            <div class="hero-badge">Protocole de Sécurité Militaire Actif</div>
+            <h1>Sécurisez votre avenir.</h1>
+            <p class="subtitle">L'expérience bancaire digitale nouvelle génération, sans compromis sur la sécurité. Vos actifs, protégés par une cryptographie de pointe.</p>
 
             <div class="dashboard-preview">
                 <div class="account-header">
                     <div>
-                        <div class="balance-label">Total Balance (USD)</div>
-                        <h2 class="balance-amount">$2,459,201.50</h2>
+                        <div class="balance-label">Solde Total (EUR)</div>
+                        <h2 class="balance-amount" id="balance">€2,459,201.50</h2>
                     </div>
-                    <button class="btn-login" style="background: rgba(255,255,255,0.1);">Transfer</button>
+                    <button class="btn-login" id="btn-transfer" style="background: rgba(255,255,255,0.1);">Virement</button>
                 </div>
                 
-                <div class="transaction-list">
+                <div class="transaction-list" id="tx-list">
                     <div class="transaction">
                         <div class="tx-info">
-                            <span class="tx-title">Wire Transfer - Crypto Exchange</span>
-                            <span class="tx-date">Today, 14:23</span>
+                            <span class="tx-title">Virement SWIFT - Crypto Exchange</span>
+                            <span class="tx-date">Aujourd'hui, 14:23</span>
                         </div>
-                        <span class="tx-amount negative">-$50,000.00</span>
+                        <span class="tx-amount negative">-€50,000.00</span>
                     </div>
                     <div class="transaction">
                         <div class="tx-info">
-                            <span class="tx-title">Dividend Deposit - Tech Index</span>
-                            <span class="tx-date">Yesterday</span>
+                            <span class="tx-title">Dépôt Dividendes - Tech Index</span>
+                            <span class="tx-date">Hier</span>
                         </div>
-                        <span class="tx-amount positive">+$12,450.00</span>
+                        <span class="tx-amount positive">+€12,450.00</span>
                     </div>
                 </div>
             </div>
         </main>
         
         <a href="#" class="admin-link">/admin-bypass</a>
+
+        <div class="modal-overlay" id="transfer-modal">
+            <div class="modal-content">
+                <h3 class="modal-title">Nouveau Virement</h3>
+                <form id="transfer-form">
+                    <div class="form-group">
+                        <label>IBAN du bénéficiaire</label>
+                        <input type="text" placeholder="FR76 1234 5678..." required>
+                    </div>
+                    <div class="form-group">
+                        <label>Montant (€)</label>
+                        <input type="number" id="transfer-amount" placeholder="0.00" required min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Motif</label>
+                        <input type="text" id="transfer-reason" placeholder="Facture, Loyer...">
+                    </div>
+                    <div class="success-msg" id="success-msg">Virement envoyé avec succès !</div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-cancel" id="btn-cancel">Annuler</button>
+                        <button type="submit" class="btn-login" id="btn-submit">Confirmer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            const modal = document.getElementById('transfer-modal');
+            const btnTransfer = document.getElementById('btn-transfer');
+            const btnCancel = document.getElementById('btn-cancel');
+            const form = document.getElementById('transfer-form');
+            const successMsg = document.getElementById('success-msg');
+            const btnSubmit = document.getElementById('btn-submit');
+            const txList = document.getElementById('tx-list');
+            const balanceEl = document.getElementById('balance');
+
+            let currentBalance = 2459201.50;
+
+            btnTransfer.addEventListener('click', () => {
+                modal.classList.add('active');
+                successMsg.style.display = 'none';
+                form.reset();
+                btnSubmit.style.display = 'block';
+            });
+
+            btnCancel.addEventListener('click', () => {
+                modal.classList.remove('active');
+            });
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const amount = parseFloat(document.getElementById('transfer-amount').value);
+                const reason = document.getElementById('transfer-reason').value || 'Virement sortant';
+                
+                if(amount > 0 && amount <= currentBalance) {
+                    // Update balance
+                    currentBalance -= amount;
+                    balanceEl.textContent = '€' + currentBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    
+                    // Add transaction
+                    const txHtml = `
+                    <div class="transaction">
+                        <div class="tx-info">
+                            <span class="tx-title">${reason}</span>
+                            <span class="tx-date">À l'instant</span>
+                        </div>
+                        <span class="tx-amount negative">-€${amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    </div>`;
+                    txList.insertAdjacentHTML('afterbegin', txHtml);
+
+                    // Show success
+                    btnSubmit.style.display = 'none';
+                    successMsg.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        modal.classList.remove('active');
+                    }, 2000);
+                } else {
+                    alert('Fonds insuffisants ou montant invalide.');
+                }
+            });
+        </script>
     </body>
     </html>
