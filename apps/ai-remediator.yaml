@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ai-remediator
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/arcadium2019/gitops_hackaton.git
+    targetRevision: main
+    path: workloads/remediator
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: demo
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

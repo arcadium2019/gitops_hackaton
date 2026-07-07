@@ -34,6 +34,7 @@ AI_MODEL = os.environ.get("OVH_AI_MODEL", "Meta-Llama-3_3-70B-Instruct")
 AI_TOKEN = os.environ["OVH_AI_ENDPOINTS_ACCESS_TOKEN"]
 GH_TOKEN = os.environ["GITHUB_TOKEN"]
 GH_REPO = os.environ["GITHUB_REPO"]  # "owner/name"
+GH_REVIEWER = os.environ.get("GITHUB_REVIEWER", "") # ex: "octocat"
 WORKLOADS_DIR = "workloads/vulnerable"
 SEVERITIES = {"CRITICAL", "HIGH"}
 
@@ -187,14 +188,7 @@ def open_pr(file_path, new_content, explanation, finding):
         },
     )
     cves = ", ".join(c["id"] for c in finding["cves"][:8])
-    pr = gh(
-        "POST",
-        f"/repos/{GH_REPO}/pulls",
-        {
-            "title": f"🤖 [AI] Correctif sécurité — {finding['workload']}",
-            "head": branch,
-            "base": "main",
-            "body": f"""## Remédiation automatique (AI Endpoints OVHcloud)
+    pr_body = f"""## Remédiation automatique (AI Endpoints OVHcloud)
 
 **Workload :** `{finding['namespace']}/{finding['workload']}` (image `{finding['image']}`)
 **CVEs ({len(finding['cves'])}) :** {cves}
@@ -204,7 +198,19 @@ def open_pr(file_path, new_content, explanation, finding):
 
 ---
 *PR générée automatiquement par la chaîne d'audit. Revue humaine requise avant merge.
-Après merge, Argo CD resynchronise le cluster automatiquement.*""",
+Après merge, Argo CD resynchronise le cluster automatiquement.*"""
+
+    if GH_REVIEWER:
+        pr_body += f"\n\n🔔 **Notification :** cc @{GH_REVIEWER} merci de revoir ce correctif."
+
+    pr = gh(
+        "POST",
+        f"/repos/{GH_REPO}/pulls",
+        {
+            "title": f"🤖 [AI] Correctif sécurité — {finding['workload']}",
+            "head": branch,
+            "base": "main",
+            "body": pr_body,
         },
     )
     return pr["html_url"]
@@ -242,8 +248,6 @@ def run_once():
     explanation, fixed = call_ai(manifest, merged)
     url = open_pr(path, fixed, explanation, merged)
     print(f"    ✅ PR ouverte : {url}")
-
-
 if __name__ == "__main__":
     if "--watch" in sys.argv:
         while True:
