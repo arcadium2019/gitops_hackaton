@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
         - name: web
-          image: nginxinc/nginx-unprivileged:1.27
+          image: nginxinc/nginx-unprivileged:1.27.3
           ports:
             - containerPort: 8080
           securityContext:
@@ -57,11 +57,11 @@ spec:
   template:
     metadata:
       labels:
-        app: old-redis
+      app: old-redis
     spec:
       containers:
         - name: redis
-          image: redis:7.4
+          image: redis:7.4.1
           ports:
             - containerPort: 6379
           securityContext:
