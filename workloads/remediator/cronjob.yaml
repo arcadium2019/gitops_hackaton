@@ -74,5 +74,5 @@ spec:
                 - name: GITHUB_REPO
                   value: "arcadium2019/gitops_hackaton"
                 - name: GITHUB_REVIEWER
-                  value: "julesHervieu" # Remplacez par votre vrai pseudo GitHub pour recevoir un mail
+                  value: "MorganSecretin" # Remplacez par votre vrai pseudo GitHub pour recevoir un mail
           restartPolicy: OnFailure
