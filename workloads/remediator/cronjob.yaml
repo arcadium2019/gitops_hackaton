@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ai-remediator
+  namespace: demo
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ai-remediator-role
+rules:
+  - apiGroups: ["aquasecurity.github.io"]
+    resources: ["vulnerabilityreports"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ai-remediator-binding
+subjects:
+  - kind: ServiceAccount
+    name: ai-remediator
+    namespace: demo
+roleRef:
+  kind: ClusterRole
+  name: ai-remediator-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ai-remediator-job
+  namespace: demo
+spec:
+  schedule: "0 0 * * *" # Tous les jours à minuit
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: ai-remediator
+          containers:
+            - name: remediator
+              image: ai-remediator:latest
+              imagePullPolicy: IfNotPresent
+              env:
+                # Variables sensibles injectées depuis un Secret Kubernetes local
+                - name: OVH_AI_ENDPOINTS_ACCESS_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: ai-remediator-secrets
+                      key: ovh-token
+                - name: GITHUB_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: ai-remediator-secrets
+                      key: github-token
+                # Variables de configuration non sensibles
+                - name: GITHUB_REPO
+                  value: "arcadium2019/gitops_hackaton"
+                - name: GITHUB_REVIEWER
+                  value: "julesHervieu" # Remplacez par votre vrai pseudo GitHub pour recevoir un mail
+          restartPolicy: OnFailure
